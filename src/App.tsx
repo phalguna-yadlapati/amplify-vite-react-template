@@ -23,10 +23,6 @@ function App() {
     }
   }
 
-  function deleteTodo(id: string) {
-    client.models.Todo.delete({ id });
-  }
-
   function toggleIsDone(todo: Schema["Todo"]["type"]) {
     client.models.Todo.update({
       id: todo.id,
