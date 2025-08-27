@@ -10,17 +10,29 @@ function App() {
   const { user, signOut } = useAuthenticator();
 
   useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
+    const subscription = client.models.Todo.observeQuery().subscribe({
       next: (data) => setTodos([...data.items]),
     });
+    return () => subscription.unsubscribe();
   }, []);
 
   function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
+    const content = window.prompt("Todo content");
+    if (content) {
+      client.models.Todo.create({ content });
+    }
   }
 
   function deleteTodo(id: string) {
-    client.models.Todo.delete({ id })
+    client.models.Todo.delete({ id });
+  }
+
+  function toggleIsDone(todo: Schema["Todo"]["type"]) {
+    client.models.Todo.update({
+      id: todo.id,
+      isDone: !todo.isDone,
+      content: todo.content,
+    });
   }
 
   return (
@@ -29,14 +41,21 @@ function App() {
       <button onClick={createTodo}>+ new</button>
       <ul>
         {todos.map((todo) => (
-          <li 
-          key={todo.id}
-          onClick={() => deleteTodo(todo.id)}
-          >{todo.content}</li>
+          <li key={todo.id}>
+            <label style={{ cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={!!todo.isDone}
+                onChange={() => toggleIsDone(todo)}
+                style={{ marginRight: "0.5em" }}
+              />
+              {todo.content}
+            </label>
+          </li>
         ))}
       </ul>
       <div>
-        🥳 App successfully hosted. Try creating a new todo.
+        🥳 App successfully hosted. Try creating a new todo and test.
         <br />
         <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
           Review next step of this tutorial.
